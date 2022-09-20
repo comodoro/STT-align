@@ -1,6 +1,6 @@
 import shutil
 import struct
-from ds_ctcdecoder import Scorer, Alphabet as NativeAlphabet
+from coqui_stt_ctcdecoder import Scorer, Alphabet as NativeAlphabet
 
 
 class Alphabet(object):
