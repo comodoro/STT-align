@@ -472,17 +472,31 @@ def main():
                                  aggressiveness=args.audio_vad_aggressiveness)
 
             def pre_filter():
+                last_segment = (b'', 0, 0)
                 for i, segment in enumerate(segments):
                     segment_buffer, time_start, time_end = segment
                     time_length = time_end - time_start
-                    if args.stt_min_duration and time_length < args.stt_min_duration:
-                        logging.info('Fragment {}: Audio too short for STT'.format(i))
+                    segment_buffer2 = last_segment[0] + segment_buffer
+                    time_start2 = last_segment[1] if last_segment[1] else time_start
+                    time_length2 = time_end - time_start2
+                    # If current segment plus last segment is too long
+                    if args.stt_max_duration and time_length2 > args.stt_max_duration:
+                        # If current segment alone is too long, nothing can be done
+                        if time_length > args.stt_max_duration:
+                            logging.info('Fragment {}: Audio too long for STT'.format(i))
+                            continue
+                        # Else yield just current segment
+                        yield (time_start, time_end, np.frombuffer(segment_buffer, dtype=np.int16))
+                        last_segment = (b'', 0, 0)
+                    elif args.stt_min_duration and time_length2 < args.stt_min_duration:
+                        # If current segment plus last segment is too short
+                        # Queue for appending to next one
+                        print('Small segment, queuing for appending to next one')
+                        last_segment = (segment_buffer2, time_start2, time_end)
                         continue
-                    if args.stt_max_duration and time_length > args.stt_max_duration:
-                        logging.info('Fragment {}: Audio too long for STT'.format(i))
-                        continue
-                    yield (time_start, time_end, np.frombuffer(segment_buffer, dtype=np.int16))
-
+                    else:
+                        yield (time_start2, time_end, np.frombuffer(segment_buffer2, dtype=np.int16))
+                        last_segment = (b'', 0, 0)
             samples = list(progress(pre_filter(), desc='VAD splitting'))
 
             pool = multiprocessing.Pool(initializer=init_stt,
