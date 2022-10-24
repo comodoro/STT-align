@@ -1,0 +1,3 @@
+[submodule "dependencies/kenlm"]
+	path = dependencies/kenlm
+	url = https://github.com/kpu/kenlm.git

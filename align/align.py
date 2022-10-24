@@ -428,10 +428,7 @@ def main():
             kenlm_path = 'dependencies/kenlm/build/bin'
             if not path.exists(kenlm_path):
                 kenlm_path = None
-            deepspeech_path = 'dependencies/deepspeech'
-            if not path.exists(deepspeech_path):
-                deepspeech_path = None
-            if kenlm_path and deepspeech_path and not args.stt_no_own_lm:
+            if kenlm_path and not args.stt_no_own_lm:
                 tc = read_script(script_path)
                 if not tc.clean_text.strip():
                     logging.error('Cleaned transcript is empty for {}'.format(path.basename(script_path)))

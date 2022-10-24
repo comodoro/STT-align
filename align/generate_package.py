@@ -57,14 +57,15 @@ def create_bundle(
     serialized_alphabet = Alphabet(alphabet_path).serialize()
 
     alphabet = NativeAlphabet()
-    err = alphabet.deserialize(serialized_alphabet, len(serialized_alphabet))
+    err = alphabet.Deserialize(serialized_alphabet, len(serialized_alphabet))
     if err != 0:
         raise RuntimeError("Error loading alphabet: {}".format(err))
 
     scorer = Scorer()
     scorer.set_alphabet(alphabet)
     scorer.reset_params(default_alpha, default_beta)
-    scorer.load_lm(lm_path)
+    scorer.init_from_filepath(lm_path.encode("utf-8"),
+            alphabet_path.encode("utf-8"))
     # TODO: Why is this not working?
     #err = scorer.load_lm(lm_path)
     #if err != ds_ctcdecoder.DS_ERR_SCORER_NO_TRIE:
